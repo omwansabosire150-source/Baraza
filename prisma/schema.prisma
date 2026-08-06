@@ -1,0 +1,83 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  BUYER
+  MERCHANT
+  ADMIN
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String
+  email         String    @unique
+  passwordHash  String
+  role          Role      @default(MERCHANT)
+  createdAt     DateTime  @default(now())
+  store         Store?
+}
+
+// A Store is a merchant's branded presence inside the marketplace.
+// One user owns one store in this MVP; can become many-to-many later
+// (e.g. staff accounts) without breaking this model.
+model Store {
+  id              String   @id @default(cuid())
+  owner           User     @relation(fields: [ownerId], references: [id])
+  ownerId         String   @unique
+
+  name            String
+  slug            String   @unique
+  category        String
+  description     String?  @db.Text
+
+  logoUrl         String?
+  bannerUrl       String?
+  brandColor      String   @default("#1F6F5C")
+
+  country         String
+  city            String?
+
+  returnPolicy    String?  @db.Text
+  deliveryMethods String?  @db.Text
+
+  // Placeholder for future Stripe Connect / escrow-style payouts.
+  // Null until the merchant completes onboarding with the payment provider.
+  stripeAccountId String?
+
+  isPublished     Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  products        Product[]
+}
+
+model Product {
+  id           String   @id @default(cuid())
+  store        Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  storeId      String
+
+  name         String
+  slug         String
+  description  String?  @db.Text
+  imageUrl     String?
+
+  priceCents   Int
+  currency     String   @default("USD")
+
+  sku          String?
+  stockQty     Int      @default(0)
+  condition    String   @default("new")
+
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([storeId, slug])
+  @@index([storeId])
+}
