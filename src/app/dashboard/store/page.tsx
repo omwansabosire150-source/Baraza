@@ -10,7 +10,25 @@ export default async function StoreSettingsPage() {
       <p className="mb-8 text-sm text-ink/60">
         This is what buyers see when they visit your storefront.
       </p>
-      <StoreForm initial={store} />
+      <StoreForm
+        initial={
+          store
+            ? {
+                name: store.name,
+                category: store.category,
+                description: store.description ?? "",
+                brandColor: store.brandColor,
+                country: store.country,
+                city: store.city ?? "",
+                logoUrl: store.logoUrl ?? "",
+                bannerUrl: store.bannerUrl ?? "",
+                returnPolicy: store.returnPolicy ?? "",
+                deliveryMethods: store.deliveryMethods ?? "",
+                isPublished: store.isPublished,
+              }
+            : null
+        }
+      />
     </div>
   );
 }

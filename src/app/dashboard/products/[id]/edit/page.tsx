@@ -16,7 +16,20 @@ export default async function EditProductPage({ params }: { params: { id: string
     <div>
       <h1 className="mb-1 font-display text-2xl font-semibold">Edit product</h1>
       <p className="mb-8 text-sm text-ink/60">{product.name}</p>
-      <ProductForm productId={product.id} initial={product} />
+      <ProductForm
+        productId={product.id}
+        initial={{
+          name: product.name,
+          description: product.description ?? "",
+          imageUrl: product.imageUrl ?? "",
+          priceCents: product.priceCents,
+          currency: product.currency,
+          sku: product.sku ?? "",
+          stockQty: product.stockQty,
+          condition: product.condition as "new" | "used" | "refurbished",
+          isActive: product.isActive,
+        }}
+      />
     </div>
   );
 }
