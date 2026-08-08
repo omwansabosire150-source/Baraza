@@ -6,10 +6,13 @@ export default function Home() {
       <header className="mx-auto flex max-w-6xl items-center justify-between px-6 py-6">
         <span className="font-display text-xl font-semibold tracking-tight">Baraza</span>
         <nav className="flex items-center gap-3">
+          <Link href="/marketplace" className="text-sm text-ink/70 hover:text-ink">
+            Browse marketplace
+          </Link>
           <Link href="/login" className="btn-secondary">
             Log in
           </Link>
-          <Link href="/register" className="btn-primary">
+          <Link href="/register?role=MERCHANT" className="btn-primary">
             Open your store
           </Link>
         </nav>
@@ -29,11 +32,11 @@ export default function Home() {
             across the marketplace — from a single dashboard, in minutes.
           </p>
           <div className="mt-8 flex gap-3">
-            <Link href="/register" className="btn-primary">
+            <Link href="/register?role=MERCHANT" className="btn-primary">
               Start selling
             </Link>
-            <Link href="/login" className="btn-secondary">
-              I already have a store
+            <Link href="/marketplace" className="btn-secondary">
+              Start shopping
             </Link>
           </div>
         </div>

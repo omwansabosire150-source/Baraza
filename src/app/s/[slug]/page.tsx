@@ -1,5 +1,7 @@
 import { notFound } from "next/navigation";
+import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import SiteHeader from "@/components/SiteHeader";
 
 function formatPrice(cents: number, currency: string) {
   return new Intl.NumberFormat("en-US", { style: "currency", currency }).format(cents / 100);
@@ -14,7 +16,9 @@ export default async function StorefrontPage({ params }: { params: { slug: strin
   if (!store || !store.isPublished) notFound();
 
   return (
-    <main className="min-h-screen">
+    <div className="min-h-screen">
+      <SiteHeader />
+      <main>
       <div
         className="h-40 w-full"
         style={{
@@ -46,7 +50,11 @@ export default async function StorefrontPage({ params }: { params: { slug: strin
         ) : (
           <div className="grid grid-cols-2 gap-4 pb-16 sm:grid-cols-3 md:grid-cols-4">
             {store.products.map((p) => (
-              <div key={p.id} className="card overflow-hidden">
+              <Link
+                key={p.id}
+                href={`/s/${store.slug}/p/${p.slug}`}
+                className="card overflow-hidden transition hover:border-teal"
+              >
                 <div
                   className="aspect-square bg-paper bg-cover bg-center"
                   style={p.imageUrl ? { backgroundImage: `url(${p.imageUrl})` } : {}}
@@ -57,11 +65,12 @@ export default async function StorefrontPage({ params }: { params: { slug: strin
                     {formatPrice(p.priceCents, p.currency)}
                   </p>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         )}
       </div>
-    </main>
+      </main>
+    </div>
   );
 }

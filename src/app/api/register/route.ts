@@ -7,6 +7,7 @@ const registerSchema = z.object({
   name: z.string().min(2, "Name is too short"),
   email: z.string().email("Enter a valid email"),
   password: z.string().min(8, "Password needs at least 8 characters"),
+  role: z.enum(["BUYER", "MERCHANT"]).default("BUYER"),
 });
 
 export async function POST(req: Request) {
@@ -20,7 +21,7 @@ export async function POST(req: Request) {
     );
   }
 
-  const { name, email, password } = parsed.data;
+  const { name, email, password, role } = parsed.data;
   const normalizedEmail = email.toLowerCase();
 
   const existing = await prisma.user.findUnique({ where: { email: normalizedEmail } });
@@ -38,7 +39,7 @@ export async function POST(req: Request) {
       name,
       email: normalizedEmail,
       passwordHash,
-      role: "MERCHANT",
+      role,
     },
   });
 

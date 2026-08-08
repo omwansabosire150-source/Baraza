@@ -18,9 +18,11 @@ model User {
   name          String
   email         String    @unique
   passwordHash  String
-  role          Role      @default(MERCHANT)
+  role          Role      @default(BUYER)
   createdAt     DateTime  @default(now())
   store         Store?
+  cart          Cart?
+  orders        Order[]
 }
 
 // A Store is a merchant's branded presence inside the marketplace.
@@ -55,6 +57,7 @@ model Store {
   updatedAt       DateTime @updatedAt
 
   products        Product[]
+  orders          Order[]
 }
 
 model Product {
@@ -78,6 +81,82 @@ model Product {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
+  cartItems    CartItem[]
+  orderItems   OrderItem[]
+
   @@unique([storeId, slug])
   @@index([storeId])
+}
+
+// One cart per buyer. Items can come from multiple stores; checkout splits
+// them into one Order per store, since each store settles independently.
+model Cart {
+  id       String     @id @default(cuid())
+  buyer    User       @relation(fields: [buyerId], references: [id], onDelete: Cascade)
+  buyerId  String     @unique
+  items    CartItem[]
+  updatedAt DateTime  @updatedAt
+}
+
+model CartItem {
+  id        String   @id @default(cuid())
+  cart      Cart     @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  cartId    String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId String
+  quantity  Int      @default(1)
+
+  @@unique([cartId, productId])
+}
+
+enum OrderStatus {
+  PENDING_PAYMENT
+  PAID
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+// One Order per store per checkout. Payment is not wired up yet (Phase 3):
+// orders are created as PENDING_PAYMENT so the shape is ready for Stripe
+// Connect's hold-and-release flow to slot in without a schema change.
+model Order {
+  id               String      @id @default(cuid())
+  buyer            User        @relation(fields: [buyerId], references: [id])
+  buyerId          String
+  store            Store       @relation(fields: [storeId], references: [id])
+  storeId          String
+
+  status           OrderStatus @default(PENDING_PAYMENT)
+  totalCents       Int
+  currency         String      @default("USD")
+
+  shippingName     String
+  shippingPhone    String?
+  shippingAddress  String
+  shippingCity     String?
+  shippingCountry  String
+
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+
+  items            OrderItem[]
+
+  @@index([buyerId])
+  @@index([storeId])
+}
+
+model OrderItem {
+  id                 String  @id @default(cuid())
+  order              Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId            String
+  product            Product @relation(fields: [productId], references: [id])
+  productId          String
+
+  // Snapshotted at purchase time so later product edits don't rewrite history.
+  nameSnapshot       String
+  priceCentsSnapshot Int
+  quantity           Int
+
+  @@index([orderId])
 }

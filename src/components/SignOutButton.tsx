@@ -6,7 +6,7 @@ export default function SignOutButton() {
   return (
     <button
       onClick={() => signOut({ callbackUrl: "/" })}
-      className="mt-2 text-xs font-medium text-teal-dark underline"
+      className="mt-2 text-xs font-medium text-amber underline"
     >
       Sign out
     </button>

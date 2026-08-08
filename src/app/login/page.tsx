@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { signIn } from "next-auth/react";
+import { signIn, getSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
@@ -22,10 +22,13 @@ export default function LoginPage() {
       redirect: false,
     });
 
-    setLoading(false);
     if (result?.ok) {
-      router.push("/dashboard");
+      const session = await getSession();
+      const role = (session?.user as any)?.role;
+      setLoading(false);
+      router.push(role === "MERCHANT" ? "/dashboard" : "/marketplace");
     } else {
+      setLoading(false);
       setError("Incorrect email or password");
     }
   }
