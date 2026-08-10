@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getCurrentMerchantStore } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
+import OrderActions from "@/components/OrderActions";
 
 function formatPrice(cents: number, currency: string) {
   return new Intl.NumberFormat("en-US", { style: "currency", currency }).format(cents / 100);
@@ -77,10 +78,23 @@ export default async function MerchantOrdersPage() {
                 {order.shippingPhone && <p>Phone: {order.shippingPhone}</p>}
               </div>
 
-              <div className="mt-3 flex justify-between border-t border-line pt-3 text-sm font-medium">
+              <div className="mt-3 flex items-center justify-between border-t border-line pt-3 text-sm font-medium">
                 <span>Total</span>
                 <span className="font-mono">{formatPrice(order.totalCents, order.currency)}</span>
               </div>
+
+              {order.status === "DELIVERED" && order.platformFeeCents != null && (
+                <p className="mt-2 text-xs text-ink/50">
+                  Payout sent: {formatPrice(order.totalCents - order.platformFeeCents, order.currency)}
+                  {" "}(platform fee {formatPrice(order.platformFeeCents, order.currency)})
+                </p>
+              )}
+
+              {(order.status === "PAID" || order.status === "SHIPPED") && (
+                <div className="mt-4">
+                  <OrderActions orderId={order.id} status={order.status} />
+                </div>
+              )}
             </div>
           ))}
         </div>

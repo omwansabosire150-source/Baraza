@@ -51,6 +51,7 @@ model Store {
   // Placeholder for future Stripe Connect / escrow-style payouts.
   // Null until the merchant completes onboarding with the payment provider.
   stripeAccountId String?
+  stripeOnboardingComplete Boolean @default(false)
 
   isPublished     Boolean  @default(false)
   createdAt       DateTime @default(now())
@@ -140,10 +141,19 @@ model Order {
   createdAt        DateTime    @default(now())
   updatedAt        DateTime    @updatedAt
 
+  // Stripe: buyer's payment (captured to the platform account, not the merchant).
+  stripeCheckoutSessionId String?
+  stripePaymentIntentId   String?
+
+  // Stripe: the eventual payout to the merchant, made on delivery confirmation.
+  platformFeeCents  Int?
+  stripeTransferId  String?
+
   items            OrderItem[]
 
   @@index([buyerId])
   @@index([storeId])
+  @@index([stripeCheckoutSessionId])
 }
 
 model OrderItem {

@@ -1,10 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 
 export default function CheckoutForm() {
-  const router = useRouter();
   const [form, setForm] = useState({
     shippingName: "",
     shippingPhone: "",
@@ -30,14 +28,15 @@ export default function CheckoutForm() {
       body: JSON.stringify(form),
     });
 
-    setPlacing(false);
     if (!res.ok) {
       const body = await res.json().catch(() => ({}));
       setError(body.error ?? "Couldn't place your order");
+      setPlacing(false);
       return;
     }
 
-    router.push("/account/orders?placed=1");
+    const { url } = await res.json();
+    window.location.href = url;
   }
 
   return (
@@ -90,8 +89,8 @@ export default function CheckoutForm() {
       </div>
 
       <p className="rounded-md border border-amber/40 bg-amber-light px-3 py-2 text-xs text-ink/70">
-        Payment isn't wired up yet — placing this order reserves stock and
-        creates the order record so the escrow payment flow can plug in next.
+        You'll be taken to Stripe's secure checkout next. Baraza holds the
+        payment and releases it to the merchant once your order is delivered.
       </p>
 
       {error && <p className="text-sm text-red-600">{error}</p>}
